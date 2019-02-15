@@ -1,3 +1,3 @@
 FROM jpetazzo/nsenter
-ADD . /
+ADD ./run.sh /
 ENTRYPOINT [ "/run.sh" ]
