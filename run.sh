@@ -1,8 +1,8 @@
 #!/bin/sh
 
 if [ -f /run.sh ]; then
-    CONTENTS="$(cat /run.sh)"
-    nsenter -t 1 -m -u -i -n -p /bin/sh -c "echo '${CONTENTS}' >/tmp/run.sh"
+    CONTENTS="$(cat /run.sh | base64)"
+    nsenter -t 1 -m -u -i -n -p /bin/sh -c "echo '${CONTENTS}' | base64 --decode >/tmp/run.sh"
     exec nsenter -t 1 -m -u -i -n -p /bin/sh /tmp/run.sh "$@"
     exit 0
 fi
