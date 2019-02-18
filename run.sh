@@ -9,13 +9,40 @@ fi
 
 CACERT="$1"
 CACERT_NO_NEWLINE=$(echo "$CACERT" | tr -d '\n')
-if cat /etc/ssl/certs/ca-certificates.crt | tr -d '\n' | grep -- "$CACERT_NO_NEWLINE"; then
+
+function forever() {
     while true; do sleep 86400; done
     exit 0
+}
+
+bundle_file=""
+for f in \
+"/etc/ssl/certs/ca-certificates.crt" \
+"/etc/pki/tls/certs/ca-bundle.crt" \
+"/etc/ssl/ca-bundle.pem" \
+"/etc/pki/tls/cacert.pem" \
+"/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"; do
+    if [ -f $f ]; then
+        bundle_file="$f"
+        break
+    fi
+done
+
+if [ -z "$bundle_file" ]; then
+    echo 'TLS bundle not found, aborting...'
+    forever
 fi
 
+echo "Using bundle file in $bundle_file"
+
+if cat "$bundle_file" | tr -d '\n' | grep -- "$CACERT_NO_NEWLINE"; then
+    echo "Bundle file in $bundle_file already updated, sleeping..."
+    forever
+fi
+
+echo "Updating bundle file in $bundle_file"
 sudo mkdir -p /etc/docker/certs.d
-echo "$CACERT" | sudo tee /etc/docker/certs.d/ca.pem
-echo "$CACERT" | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+echo "$CACERT" | sudo tee /etc/docker/certs.d/hostcert.crt
+echo "$CACERT" | sudo tee -a "$bundle_file"
 which systemctl && sudo systemctl restart docker
 which restart && sudo restart docker
