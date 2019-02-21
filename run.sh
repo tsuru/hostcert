@@ -10,10 +10,15 @@ fi
 CACERT="$1"
 CACERT_NO_NEWLINE=$(echo "$CACERT" | tr -d '\n')
 
-function forever() {
+forever() {
     while true; do sleep 86400; done
     exit 0
 }
+
+if [ -z "$CACERT" ]; then
+    echo 'Empty ca certificate argument, aborting...'
+    forever
+fi
 
 bundle_file=""
 for f in \
