@@ -51,3 +51,5 @@ echo "$CACERT" | sudo tee /etc/docker/certs.d/hostcert.crt
 echo "$CACERT" | sudo tee -a "$bundle_file"
 which systemctl && sudo systemctl restart docker
 which restart && sudo restart docker
+which systemctl && sudo systemctl restart containerd
+which restart && sudo restart containerd
